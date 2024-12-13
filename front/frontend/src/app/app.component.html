@@ -1,0 +1,124 @@
+<div class="banner">
+  <button class="nav-btn" (click)="mostrarSeccion('eventos')">Eventos Deportivos</button>
+  <button class="nav-btn" (click)="mostrarSeccion('cupones')">Cupos</button>
+</div>
+
+<!-- Sección de Eventos Deportivos -->
+<div *ngIf="seccionActual === 'eventos'">
+  <h1>Eventos Deportivos</h1>
+
+  <!-- Filtros -->
+  <div class="filtro-container">
+    <button (click)="seleccionarFiltro('todos')" [class.active]="filtroActual === 'todos'">🏆 Todos</button>
+    <button (click)="seleccionarFiltro('sr:sport:1')" [class.active]="filtroActual === 'sr:sport:1'">⚽ Fútbol</button>
+    <button (click)="seleccionarFiltro('sr:sport:2')" [class.active]="filtroActual === 'sr:sport:2'">🏀 Baloncesto</button>
+
+    <!-- Campo de búsqueda con ícono -->
+    <input
+      type="text"
+      placeholder="Buscar por equipos 🔎"
+      [(ngModel)]="searchQuery"
+      (input)="filtrarPorBusqueda()"
+      class="search-input"
+    />
+    <span class="search-icon"><i class="fa fa-search"></i></span>
+  </div>
+
+  <!-- Tabla con los eventos -->
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Equipos Participantes</th>
+        <th>Fecha y Hora</th>
+        <th>Cuotas de Apuestas</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let evento of eventosFiltrados">
+        <td>{{ evento.equipo1 }} vs {{ evento.equipo2 }}</td>
+        <td>{{ evento.fecha }} {{ evento.hora }}</td>
+        <td>
+          <div class="cuotas">
+            <span class="cuota cuota-1">1: {{ evento.cuotaEquipo1 }}</span>
+            <span class="cuota cuota-x">X: {{ evento.cuotaEmpate }}</span>
+            <span class="cuota cuota-2">2: {{ evento.cuotaEquipo2 }}</span>
+          </div>
+        </td>
+        <td>
+          <button class="btn-seleccionar" (click)="seleccionarEvento(evento)">Seleccionar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Ventana emergente de apuesta -->
+  <div class="modal" *ngIf="eventoSeleccionado">
+    <div class="modal-content">
+      <h3 class="modal-title">Apuesta para: {{ eventoSeleccionado.equipo1 }} vs {{ eventoSeleccionado.equipo2 }}</h3>
+      <div class="opciones-apuesta">
+        <label class="opcion">
+          <input type="radio" name="resultado" [(ngModel)]="resultadoSeleccionado" [value]="'1'" class="radio-btn">
+          <span>1 - {{ eventoSeleccionado.cuotaEquipo1 }}</span>
+        </label><br />
+        <label class="opcion">
+          <input type="radio" name="resultado" [(ngModel)]="resultadoSeleccionado" [value]="'X'" class="radio-btn">
+          <span>X - {{ eventoSeleccionado.cuotaEmpate }}</span>
+        </label><br />
+        <label class="opcion">
+          <input type="radio" name="resultado" [(ngModel)]="resultadoSeleccionado" [value]="'2'" class="radio-btn">
+          <span>2 - {{ eventoSeleccionado.cuotaEquipo2 }}</span>
+        </label>
+      </div>
+
+      <div class="monto-apuesta">
+        <label for="monto">Monto de la Apuesta:</label>
+        <input type="number" id="monto" [(ngModel)]="montoApuesta" placeholder="Monto" />
+      </div>
+
+      <div class="botones">
+        <button class="btn-aceptar" (click)="agregarApuesta()">Aceptar Apuesta</button>
+        <button class="btn-cerrar" (click)="cerrarModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sección de Cupos -->
+<div *ngIf="seccionActual === 'cupones'">
+  <h1>Mis Cupones de Apuestas</h1>
+
+  <!-- Mostrar los cupones guardados -->
+  <div *ngIf="cuponesApuestas.length > 0">
+    <div *ngFor="let cupon of cuponesApuestas" class="cupon-container">
+      <div class="cupon">
+        <p><strong>Evento:</strong> {{ cupon.evento }}</p>
+        <p><strong>Resultado Seleccionado:</strong> {{ cupon.resultado }}</p>
+        <p><strong>Monto de la Apuesta:</strong> {{ cupon.monto }}</p>
+        <p><strong>Cuota:</strong> {{ cupon.cuota }}</p>
+        <button class="btn-detalles" (click)="mostrarDetalles(cupon)">Detalles de la Apuesta</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="cuponesApuestas.length === 0">
+    <p>No tienes cupones guardados.</p>
+  </div>
+
+  <!-- Modal de detalles de apuesta -->
+  <div *ngIf="detalleApuestaVisible" class="detalles-apuesta">
+    <h3>Detalles de la Apuesta</h3>
+    <p><strong>Evento:</strong> {{ detalleApuesta.evento }}</p>
+    <p><strong>Resultado Seleccionado:</strong> {{ detalleApuesta.resultado }}</p>
+    <p><strong>Monto de la Apuesta:</strong> {{ detalleApuesta.monto }}</p>
+    <p><strong>Cuota:</strong> {{ detalleApuesta.cuota }}</p>
+    <p><strong>Ganancia Potencial:</strong> {{ detalleApuesta.monto * detalleApuesta.cuota | currency }}</p>
+    <button class="btn-eliminar" (click)="eliminarApuesta(detalleApuesta)">Eliminar Apuesta</button>
+    <button class="btn-cerrar-detalle" (click)="cerrarDetalles()">Cerrar</button>
+  </div>
+
+
+<!-- Notificación de confirmación de cupo -->
+<div *ngIf="notificacionVisible" class="notificacion">
+  Cupo generado con éxito!
+</div>
